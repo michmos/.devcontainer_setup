@@ -1,0 +1,39 @@
+# Example project compose file, built on top of mydevbox.
+# Copy this into a project's repo root as `docker-compose.yaml` alongside the
+# project's Dockerfile (see ./Dockerfile) and adjust the service name/image
+# below.
+
+services:
+  myproject:
+    build: .
+    image: myproject:latest
+    container_name: myproject
+    command: sleep infinity
+    volumes:
+      # Bind-mount project source into /workspace at run time - not $HOME,
+      # see the Dockerfile comment for why:
+      # - .:/workspace
+      - ${SSH_AUTH_SOCK}:/ssh-agent
+    environment:
+      SSH_AUTH_SOCK: /ssh-agent
+
+# --- Usage -------------------------------------------------------------------
+# Build:
+#   docker compose build
+#
+# Run (once per project: start it detached, kept alive independently of any
+# shell - mirrors "docker run -d ... sleep infinity" in ../README.md):
+#   docker compose up -d
+#
+# Every session, attach via tmux so it's reattachable across multiple execs:
+#   docker compose exec myproject tmux new -A -s main
+#
+# Stop (end of day / freeing resources: stops all processes, tmux included,
+# but the container's filesystem - and everything in it - persists):
+#   docker compose stop
+#
+# Start (resume later: state - Claude auth, shell/nvim history, ad-hoc
+# installs - is still there; only the tmux session needs restarting):
+#   docker compose start
+#   docker compose exec myproject tmux new -A -s main
+# -------------------------------------------------------------------------------
