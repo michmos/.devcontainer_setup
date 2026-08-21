@@ -62,6 +62,14 @@ ENV PATH="/home/ubuntu/.local/bin:${PATH}"
 # powerlevel10k theme, referenced directly by ~/.zshrc.d/plugins.zsh
 RUN git clone --depth=1 https://github.com/romkatv/powerlevel10k.git ~/powerlevel10k
 
+# install tmux plugin manager (tpm) and plugins
+RUN git clone --depth=1 https://github.com/tmux-plugins/tpm ~/.config/tmux/plugins/tpm \
+    && tmux new-session -d -s install_plugins \
+    && tmux source-file ~/.config/tmux/tmux.conf \
+    && ~/.config/tmux/plugins/tpm/bin/install_plugins \
+    && sleep 3 \
+    && tmux kill-server
+
 # Neovim: apt's version lags far behind upstream, so install the official release tarball.
 RUN installTreeFromGithub.sh neovim/neovim "nvim-linux-x86_64.tar.gz" nvim bin/nvim "${NVIM_VERSION}"
 
