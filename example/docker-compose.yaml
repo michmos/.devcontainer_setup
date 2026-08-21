@@ -12,7 +12,7 @@ services:
     volumes:
       # Bind-mount project source into /workspace at run time - not $HOME,
       # see the Dockerfile comment for why:
-      # - .:/workspace
+      - .:/workspace
       - ${SSH_AUTH_SOCK}:/ssh-agent
     environment:
       SSH_AUTH_SOCK: /ssh-agent
