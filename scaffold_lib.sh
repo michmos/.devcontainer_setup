@@ -21,39 +21,36 @@ validate_project_name() {
   fi
 }
 
-# Copies example/{Dockerfile,docker-compose.yaml} into project_dir, replacing
-# the "myproject" placeholder, and adds them to .gitignore (appending rather
-# than overwriting, in case one already exists).
+# Copies example/{Dockerfile,docker-compose.yaml} into container_dir, replacing
+# the "myproject" placeholder. container_dir is the "cont_<name>" wrapper dir,
+# a sibling of (not an ancestor/descendant of) the git-initialized work dir,
+# so the container files never enter the project's git tree at all — no
+# .gitignore needed.
 scaffold_project_files() {
-  local example_dir="$1" project_dir="$2" project_name="$3"
+  local example_dir="$1" container_dir="$2" project_name="$3"
 
   for f in Dockerfile docker-compose.yaml; do
-    if [[ -e "$project_dir/$f" ]]; then
-      err "$project_dir/$f already exists, refusing to overwrite."
+    if [[ -e "$container_dir/$f" ]]; then
+      err "$container_dir/$f already exists, refusing to overwrite."
       exit 1
     fi
   done
 
-  cp "$example_dir/Dockerfile" "$example_dir/docker-compose.yaml" "$project_dir/"
-  sed -i "s/myproject/$project_name/g" "$project_dir/Dockerfile" "$project_dir/docker-compose.yaml"
-
-  for entry in Dockerfile docker-compose.yaml; do
-    if [[ ! -f "$project_dir/.gitignore" ]] || ! grep -qxF "$entry" "$project_dir/.gitignore"; then
-      printf '%s\n' "$entry" >> "$project_dir/.gitignore"
-    fi
-  done
+  cp "$example_dir/Dockerfile" "$example_dir/docker-compose.yaml" "$container_dir/"
+  sed -i "s/myproject/$project_name/g" "$container_dir/Dockerfile" "$container_dir/docker-compose.yaml"
 }
 
 print_next_steps() {
-  local project_dir="$1" project_name="$2"
+  local container_dir="$1" work_dir="$2" project_name="$3"
   cat <<EOF
-Dockerfile + docker-compose.yaml ready in $project_dir (.gitignore'd).
+Dockerfile + docker-compose.yaml ready in $container_dir.
+Project working dir (git root, bind-mounted into /workspace): $work_dir
 
 Next steps:
   - adapt Dockerfile (project-specific tooling section)
-  - add bind mounts to docker-compose.yaml if required (workspace source, etc.)
-  - run: docker compose build
-  - run: docker compose up -d
-  - run: docker compose exec $project_name tmux new -A -s main
+  - cd $container_dir
+  - docker compose build
+  - docker compose up -d
+  - docker compose exec $project_name tmux new -A -s main
 EOF
 }

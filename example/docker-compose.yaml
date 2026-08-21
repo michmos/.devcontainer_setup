@@ -1,7 +1,7 @@
 # Example project compose file, built on top of mydevbox.
-# Copy this into a project's repo root as `docker-compose.yaml` alongside the
-# project's Dockerfile (see ./Dockerfile) and adjust the service name/image
-# below.
+# Copy this into a project's container dir (cont_<name>/, see
+# create_new_project.sh / init_project.sh) alongside the project's Dockerfile
+# (see ./Dockerfile) and adjust the service name/image below.
 
 services:
   myproject:
@@ -11,8 +11,9 @@ services:
     command: sleep infinity
     volumes:
       # Bind-mount project source into /workspace at run time - not $HOME,
-      # see the Dockerfile comment for why:
-      - .:/workspace
+      # see the Dockerfile comment for why. ./myproject is the git-initialized
+      # working dir, a sibling of this compose file (inside cont_<name>/):
+      - ./myproject:/workspace
       - ${SSH_AUTH_SOCK}:/ssh-agent
     environment:
       SSH_AUTH_SOCK: /ssh-agent

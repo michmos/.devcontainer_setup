@@ -1,5 +1,6 @@
 # Example project image built on top of mydevbox.
-# Copy this into a project's repo root as `Dockerfile` and adjust the
+# Copy this into a project's container dir (cont_<name>/, see
+# create_new_project.sh / init_project.sh) as `Dockerfile` and adjust the
 # "project-specific tooling" section below.
 
 FROM mydevbox:latest
