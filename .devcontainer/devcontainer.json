@@ -3,5 +3,8 @@
     "context": "..",
     "dockerfile": "Dockerfile"
   },
-  "postCreateCommand": "bash .devcontainer/scripts/setup.sh"
+  "postCreateCommand": "bash .devcontainer/scripts/setup.sh",
+  "containerEnv": {
+    "TERM": "xterm-256color"
+  }
 }
