@@ -30,8 +30,8 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
         lsof \
     && rm -rf /var/lib/apt/lists/*
 
-COPY scripts/installBinaryFromGithub.sh /usr/local/bin/installBinaryFromGithub.sh
-COPY scripts/installTreeFromGithub.sh /usr/local/bin/installTreeFromGithub.sh
+COPY .devcontainer/scripts/installBinaryFromGithub.sh /usr/local/bin/installBinaryFromGithub.sh
+COPY .devcontainer/scripts/installTreeFromGithub.sh /usr/local/bin/installTreeFromGithub.sh
 
 # update ubuntu:24.04's default user - grant sudo, and update login shell
 RUN echo "ubuntu ALL=(ALL) NOPASSWD:ALL" > /etc/sudoers.d/ubuntu \
