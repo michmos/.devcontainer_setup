@@ -3,5 +3,7 @@
     "context": "..",
     "dockerfile": "Dockerfile"
   },
+  "workspaceMount": "source=${localWorkspaceFolder},target=/home/ubuntu/workspaces/${localWorkspaceFolderBasename},type=bind",
+  "workspaceFolder": "/home/ubuntu/workspaces/${localWorkspaceFolderBasename}",
   "postCreateCommand": "bash .devcontainer/scripts/setup.sh"
 }
