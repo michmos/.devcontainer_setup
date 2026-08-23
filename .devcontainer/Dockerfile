@@ -1,9 +1,6 @@
 # syntax=docker/dockerfile:1
 # Base dev image: personal tooling only (nvim, tmux, claude, git, dotfiles).
 # Project-specific images (e.g. ROS2) should FROM this and add their own deps.
-#
-# Build with SSH agent forwarding so the private dotfiles repo can be cloned:
-#   docker build --ssh default -t mydevbox:latest ~/.mydevbox
 
 FROM ubuntu:24.04
 
@@ -17,6 +14,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
         git \
         curl \
         ca-certificates \
+        ncurses-term \
         build-essential \
         ripgrep \
         sudo \
@@ -41,16 +39,10 @@ RUN echo "ubuntu ALL=(ALL) NOPASSWD:ALL" > /etc/sudoers.d/ubuntu \
 USER ubuntu
 WORKDIR /home/ubuntu
 
-# Dotfiles: bare git repo at ~/.dotfiles with work-tree=$HOME (see michmos/.dotfiles).
-# Private repo, so this needs SSH agent forwarding at build time (--ssh default, see
-# top of file). github.com's host key is well-known/public, safe to trust here.
+# github.com's host key is well-known/public, safe to trust at build time.
 RUN mkdir -p ~/.ssh && chmod 700 ~/.ssh \
     && ssh-keyscan -t ed25519,rsa github.com >> ~/.ssh/known_hosts \
     && chmod 600 ~/.ssh/known_hosts
-RUN --mount=type=ssh,uid=1000,gid=1000 \
-    git clone --bare git@github.com:michmos/.dotfiles.git ~/.dotfiles \
-    && git --git-dir=$HOME/.dotfiles --work-tree=$HOME config --local status.showUntrackedFiles no \
-    && git --git-dir=$HOME/.dotfiles --work-tree=$HOME checkout
 
 ##############################################################################
 # Install more tools
@@ -62,13 +54,9 @@ ENV PATH="/home/ubuntu/.local/bin:${PATH}"
 # powerlevel10k theme, referenced directly by ~/.zshrc.d/plugins.zsh
 RUN git clone --depth=1 https://github.com/romkatv/powerlevel10k.git ~/powerlevel10k
 
-# install tmux plugin manager (tpm) and plugins
-RUN git clone --depth=1 https://github.com/tmux-plugins/tpm ~/.config/tmux/plugins/tpm \
-    && tmux new-session -d -s install_plugins \
-    && tmux source-file ~/.config/tmux/tmux.conf \
-    && ~/.config/tmux/plugins/tpm/bin/install_plugins \
-    && sleep 3 \
-    && tmux kill-server
+# install tmux plugin manager (tpm); plugins are installed in postCreateCommand
+# since that needs tmux.conf from the dotfiles repo (cloned at container startup)
+RUN git clone --depth=1 https://github.com/tmux-plugins/tpm ~/.config/tmux/plugins/tpm
 
 # Neovim: apt's version lags far behind upstream, so install the official release tarball.
 RUN installTreeFromGithub.sh neovim/neovim "nvim-linux-x86_64.tar.gz" nvim bin/nvim "${NVIM_VERSION}"
@@ -81,9 +69,5 @@ RUN installBinaryFromGithub.sh sharkdp/fd "fd-v{version}-x86_64-unknown-linux-gn
 RUN installBinaryFromGithub.sh tree-sitter/tree-sitter "tree-sitter-cli-linux-x64.zip" tree-sitter
 RUN installBinaryFromGithub.sh sxyazi/yazi "yazi-x86_64-unknown-linux-gnu.zip" yazi
 RUN installBinaryFromGithub.sh sxyazi/yazi "yazi-x86_64-unknown-linux-gnu.zip" ya
-
-# run nvim setup
-RUN nvim --headless "+Lazy! sync" -c "sleep 90" +qa
-RUN test -x "$HOME/.local/share/nvim/mason/bin/codelldb"
 
 CMD ["zsh"]
