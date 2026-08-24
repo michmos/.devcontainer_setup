@@ -6,4 +6,13 @@
   "workspaceMount": "source=${localWorkspaceFolder},target=/home/ubuntu/workspaces/${localWorkspaceFolderBasename},type=bind",
   "workspaceFolder": "/home/ubuntu/workspaces/${localWorkspaceFolderBasename}",
   "postCreateCommand": "bash .devcontainer/scripts/setup.sh"
+
+  // "mounts": [
+  //   // read-only host file
+  //   "source=${localEnv:HOME}/.gitconfig,target=/home/ubuntu/.gitconfig,type=bind,readonly",
+  //   // read-write host folder
+  //   "source=${localEnv:HOME}/data,target=/home/ubuntu/data,type=bind",
+  //   // named volume: faster, survives rebuilds
+  //   "source=my-cache,target=/home/ubuntu/.cache,type=volume"
+  // ]
 }
