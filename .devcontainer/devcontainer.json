@@ -7,7 +7,7 @@
   },
   "workspaceMount": "source=${localWorkspaceFolder},target=/home/ubuntu/workspaces/${localWorkspaceFolderBasename},type=bind",
   "workspaceFolder": "/home/ubuntu/workspaces/${localWorkspaceFolderBasename}",
-  "postCreateCommand": "bash .devcontainer/scripts/setup.sh"
+  "postStartCommand": "bash .devcontainer/scripts/on_start.sh"
 
   // "mounts": [
   //   // read-only host file
