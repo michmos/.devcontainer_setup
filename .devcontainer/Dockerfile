@@ -1,6 +1,10 @@
 # syntax=docker/dockerfile:1
 # Base dev image: personal tooling only (nvim, tmux, claude, git, dotfiles).
 # Project-specific images (e.g. ROS2) should FROM this and add their own deps.
+#
+# Needs SSH agent forwarding for the private dotfiles repo. devcontainer.json passes
+# this through via "build": { "options": ["--ssh", "default"] }; when building by hand
+# use:  docker build --ssh default -t mydevbox:latest ~/.devcontainer_setup
 
 FROM ubuntu:24.04
 
@@ -54,8 +58,7 @@ ENV PATH="/home/ubuntu/.local/bin:${PATH}"
 # powerlevel10k theme, referenced directly by ~/.zshrc.d/plugins.zsh
 RUN git clone --depth=1 https://github.com/romkatv/powerlevel10k.git ~/powerlevel10k
 
-# install tmux plugin manager (tpm); plugins are installed in postCreateCommand
-# since that needs tmux.conf from the dotfiles repo (cloned at container startup)
+# install tmux plugin manager (tpm); plugins follow after the dotfiles are in place
 RUN git clone --depth=1 https://github.com/tmux-plugins/tpm ~/.config/tmux/plugins/tpm
 
 # Neovim: apt's version lags far behind upstream, so install the official release tarball.
@@ -69,5 +72,30 @@ RUN installBinaryFromGithub.sh sharkdp/fd "fd-v{version}-x86_64-unknown-linux-gn
 RUN installBinaryFromGithub.sh tree-sitter/tree-sitter "tree-sitter-cli-linux-x64.zip" tree-sitter
 RUN installBinaryFromGithub.sh sxyazi/yazi "yazi-x86_64-unknown-linux-gnu.zip" yazi
 RUN installBinaryFromGithub.sh sxyazi/yazi "yazi-x86_64-unknown-linux-gnu.zip" ya
+
+##############################################################################
+# Dotfiles and everything that depends on them
+##############################################################################
+ARG DOTFILES_REF=main
+RUN --mount=type=ssh,uid=1000,gid=1000 \
+    git clone --bare git@github.com:michmos/.dotfiles.git ~/.dotfiles \
+    && git --git-dir=$HOME/.dotfiles --work-tree=$HOME config --local status.showUntrackedFiles no \
+    && git --git-dir=$HOME/.dotfiles --work-tree=$HOME checkout "${DOTFILES_REF}" \
+    # clone --bare sets no fetch refspec/upstream, so teach it both to make setup.sh's pull work
+    && git --git-dir=$HOME/.dotfiles config remote.origin.fetch "+refs/heads/*:refs/remotes/origin/*" \
+    && git --git-dir=$HOME/.dotfiles fetch origin \
+    && git --git-dir=$HOME/.dotfiles branch --set-upstream-to=origin/"${DOTFILES_REF}" "${DOTFILES_REF}"
+
+# Install tmux plugins
+RUN tmux new-session -d -s install_plugins \
+    && tmux source-file ~/.config/tmux/tmux.conf \
+    && ~/.config/tmux/plugins/tpm/bin/install_plugins \
+    && sleep 3 \
+    && tmux kill-server
+
+# The sleep keeps nvim alive while mason installs LSPs/DAPs in the background;
+# the test below is what actually verifies mason finished.
+RUN nvim --headless "+Lazy! sync" -c "sleep 90" +qa
+RUN test -x "$HOME/.local/share/nvim/mason/bin/codelldb"
 
 CMD ["zsh"]

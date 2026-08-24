@@ -1,7 +1,9 @@
 {
   "build": {
     "context": "..",
-    "dockerfile": "Dockerfile"
+    "dockerfile": "Dockerfile",
+    // forwards the host ssh agent into the build so the private dotfiles repo can be cloned
+    "options": ["--ssh", "default"]
   },
   "workspaceMount": "source=${localWorkspaceFolder},target=/home/ubuntu/workspaces/${localWorkspaceFolderBasename},type=bind",
   "workspaceFolder": "/home/ubuntu/workspaces/${localWorkspaceFolderBasename}",
