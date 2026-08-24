@@ -15,4 +15,24 @@
   //   // named volume: faster, survives rebuilds
   //   "source=my-cache,target=/home/ubuntu/.cache,type=volume"
   // ]
+
+  // environment variables
+  // "containerEnv": { "ROS_DOMAIN_ID": "42" },                        // baked into container, all processes
+  // "remoteEnv": { "PATH": "${containerEnv:PATH}:/opt/foo/bin" },     // per-session, can reference existing vars
+
+  // docker run flags
+  // "runArgs": [
+  //   "--network=host",        // ROS2 DDS discovery
+  //   "--ipc=host",            // shared memory transport
+  //   "--device=/dev/ttyUSB0", // pass through a single device
+  //   "--gpus=all"
+  // ]
+
+  // lifecycle hooks ("content" = the workspace repo, i.e. what gets mounted/cloned into workspaceFolder)
+  // "initializeCommand": "...",     // on the HOST, before the container exists
+  // "onCreateCommand": "...",       // first creation, repo not mounted yet - only image-level setup here
+  // "updateContentCommand": "...",  // repo now present; re-runs when a prebuild pulls newer commits
+  // "postCreateCommand": "...",     // once, after creation and repo are fully in place
+  // "postStartCommand": "...",      // every container start, not just the first
+  // "postAttachCommand": "..."      // every time a client attaches
 }
