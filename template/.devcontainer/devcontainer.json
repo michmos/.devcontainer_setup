@@ -1,13 +1,14 @@
 {
+  // builds FROM mydevbox:latest - run the repo's build.sh once to create it
   "build": {
+    // repo root, so the project Dockerfile can COPY project files
     "context": "..",
-    "dockerfile": "Dockerfile",
-    // forwards the host ssh agent into the build so the private dotfiles repo can be cloned
-    "options": ["--ssh", "default"]
+    "dockerfile": "Dockerfile"
   },
   "workspaceMount": "source=${localWorkspaceFolder},target=/home/ubuntu/workspaces/${localWorkspaceFolderBasename},type=bind",
   "workspaceFolder": "/home/ubuntu/workspaces/${localWorkspaceFolderBasename}",
-  "postStartCommand": "bash .devcontainer/scripts/on_start.sh"
+  // baked into the base image, pulls the newest dotfiles on every start
+  "postStartCommand": "on_start.sh"
 
   // "mounts": [
   //   // read-only host file

@@ -2,9 +2,8 @@
 # Base dev image: personal tooling only (nvim, tmux, claude, git, dotfiles).
 # Project-specific images (e.g. ROS2) should FROM this and add their own deps.
 #
-# Needs SSH agent forwarding for the private dotfiles repo. devcontainer.json passes
-# this through via "build": { "options": ["--ssh", "default"] }; when building by hand
-# use:  docker build --ssh default -t mydevbox:latest ~/.devcontainer_setup
+# Needs SSH agent forwarding for the private dotfiles repo. Build it with
+# ../build.sh, which passes --ssh default and tags the result mydevbox:latest.
 
 FROM ubuntu:24.04
 
@@ -32,8 +31,10 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
         lsof \
     && rm -rf /var/lib/apt/lists/*
 
-COPY .devcontainer/scripts/installBinaryFromGithub.sh /usr/local/bin/installBinaryFromGithub.sh
-COPY .devcontainer/scripts/installTreeFromGithub.sh /usr/local/bin/installTreeFromGithub.sh
+# helper scripts live on PATH so derived project images can call them too
+COPY --chmod=0755 scripts/installBinaryFromGithub.sh /usr/local/bin/installBinaryFromGithub.sh
+COPY --chmod=0755 scripts/installTreeFromGithub.sh /usr/local/bin/installTreeFromGithub.sh
+COPY --chmod=0755 scripts/on_start.sh /usr/local/bin/on_start.sh
 
 # update ubuntu:24.04's default user - grant sudo, and update login shell
 RUN echo "ubuntu ALL=(ALL) NOPASSWD:ALL" > /etc/sudoers.d/ubuntu \
