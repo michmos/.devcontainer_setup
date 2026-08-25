@@ -13,7 +13,7 @@ base/                     # source of mydevbox:latest, built by build.sh
 template/.devcontainer/   # copied into a new project by devcon_init.sh
 ├── devcontainer.json
 └── Dockerfile            # FROM mydevbox:latest
-build.sh                  # builds mydevbox:latest and pins it against prunes
+build.sh                  # builds mydevbox:latest
 devcon_init.sh
 ```
 
@@ -25,15 +25,20 @@ Needs a running ssh agent with access to the private dotfiles repo.
 Rerun after changing anything under `base/`. Project containers keep their old
 base until rebuilt with `devpod up --recreate <workspace>`.
 
-The build leaves an idle `mydevbox-keep` container running. It holds a reference
-to the image so a bare `docker image prune -a` cannot reclaim the base. It is
-recreated on every build, so superseded bases stay prunable.
+Project devcontainers run this with `--if-missing` from `initializeCommand`, so
+`devpod up` builds the base on demand when it is absent.
 
 ## Cleanup
-Project images are thin layers over the base, so they cost almost nothing. The
-standard commands are safe to run:
+Project images are thin layers over the base, so they cost almost nothing.
 ```sh
-docker image prune -a          # base is pinned, so it survives
+docker image prune -a
+```
+This may drop the base image or just its tag. That is fine: a rerun of
+`build.sh` restores it from the build cache in a few seconds.
+
+The build cache is what makes that cheap, so prune it deliberately rather than
+by habit - afterwards the base needs a full cold rebuild and a loaded ssh agent.
+```sh
 docker builder prune --keep-storage 10GB
 ```
 

@@ -1,5 +1,8 @@
 {
-  // builds FROM mydevbox:latest - run the repo's build.sh once to create it
+  // builds the base image on the host first if it is missing (path is filled in
+  // by devcon_init.sh); a present base is left untouched
+  "initializeCommand": "bash __MYDEVBOX_HOME__/build.sh --if-missing",
+  // builds FROM mydevbox:latest
   "build": {
     // repo root, so the project Dockerfile can COPY project files
     "context": "..",

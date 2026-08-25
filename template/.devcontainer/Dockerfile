@@ -1,6 +1,4 @@
-# syntax=docker/dockerfile:1
-# Project image: the base already carries nvim, tmux, zsh + dotfiles, claude, git.
-# Add only what this project needs on top.
+# This inherits from base - add project specific dependencies and tooling here
 #
 # The base's helper scripts are on PATH, so they can be used here as well:
 #   RUN installBinaryFromGithub.sh <owner/repo> <asset-template> [binary-name]

@@ -14,13 +14,14 @@ if [ -e "$dest" ]; then
   exit 1
 fi
 
-if ! docker image inspect "$image" >/dev/null 2>&1; then
-  echo "Error: base image '$image' not found - run '$script_dir/build.sh' first" >&2
-  exit 1
-fi
-
 cp -r "$src" "$dest"
+# point initializeCommand at this checkout, wherever it lives
+sed -i "s|__MYDEVBOX_HOME__|$script_dir|g" "$dest/devcontainer.json"
+
 echo "Copied $src -> $dest"
+if ! docker image inspect "$image" >/dev/null 2>&1; then
+  echo "Note: base image '$image' is missing - 'devpod up' will build it first"
+fi
 echo ""
 echo "- Update '.devcontainer/devcontainer.json' and '.devcontainer/Dockerfile' to your project needs"
 echo "- Run 'devpod up .' to build and run the devcontainer"
