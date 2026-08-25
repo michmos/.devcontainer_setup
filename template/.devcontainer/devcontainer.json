@@ -10,7 +10,10 @@
   },
   "workspaceMount": "source=${localWorkspaceFolder},target=/home/ubuntu/workspaces/${localWorkspaceFolderBasename},type=bind",
   "workspaceFolder": "/home/ubuntu/workspaces/${localWorkspaceFolderBasename}",
-  // baked into the base image, pulls the newest dotfiles on every start
+  // baked into the base image, pulls the newest dotfiles on every start.
+  // add project startup tasks as named entries - they run in parallel, so chain
+  // them into one string instead when the order matters:
+  //   "postStartCommand": { "base": "on_start.sh", "project": "npm install" }
   "postStartCommand": "on_start.sh"
 
   // "mounts": [
