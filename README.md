@@ -1,3 +1,6 @@
+NOT USED ANYMORE - using docker sandbox instead to isolate only the agent
+while keeping the dev setup on the host machine
+
 # mydevbox
 Personal base dev image: nvim, tmux, zsh + dotfiles, claude, git, lazygit, fzf.
 Project containers are thin layers `FROM mydevbox:latest` and add their own deps.
